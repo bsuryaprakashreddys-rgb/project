@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz System for Education</title>
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --primary: rgb(250, 15, 152);
+            --secondary: #f75200;
+            --success: #16a34a;
+            --warning: blue;
+            --danger: #dc2626;
+            --bg: black;
+            --card: rgb(0, 0, 0);
+            --text: blue;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column;
+            min-height: 100vh; 
+        }
+        
+        .container { 
+            flex-grow: 1;
+            width: 100%; 
+            max-width: 100%; 
+            background: var(--card); 
+            padding: 40px; 
+            box-sizing: border-box;
+        }
+        
+        h1, h2, h3 { color: var(--primary); margin-top: 0; }
+        
+        button { cursor: pointer; padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; transition: 0.2s; margin-top: 10px; font-size: 1rem; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-secondary { background-color: var(--secondary); color: white; }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; margin-top: 0; }
+        button:hover { opacity: 0.9; filter: brightness(1.1); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; background-color: #94a3b8; }
+
+        input, select, textarea { width: 100%; padding: 14px; margin: 8px 0 20px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        
+        .flex { display: flex; gap: 20px; align-items: center; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .hidden { display: none !important; }
+        .w-full { width: 100%; }
+        .text-center { text-align: center; }
+        
+        .card-box { border: 1px solid #e2e8f0; padding: 25px; border-radius: 12px; margin-bottom: 25px; background: #fff; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card-gray { background: #f1f5f9; border: 1px dashed #cbd5e1; }
+        
+        #timer-header { 
+            position: sticky; top: 0; z-index: 100; 
+            background: var(--text); color: white; 
+            padding: 20px 40px; 
+            margin: 0; 
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .timer-display { font-size: 2rem; font-family: monospace; font-weight: bold; color: #fbbf24; }
+
+        .nav-tabs { display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 30px; }
+        .nav-tab { padding: 15px 40px; cursor: pointer; border-bottom: 4px solid transparent; color: #64748b; font-size: 1.1rem; }
+        .nav-tab.active { border-bottom-color: var(--primary); color: var(--primary); font-weight: bold; }
+
+        .action-buttons { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; }
+        
+        /* Centered login boxes */
+        #view-login, #view-student-login, #view-teacher-login { max-width: 500px; margin: 80px auto; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="view-login" class="text-center">
+        <h1>Interactive Quiz System for Education</h1>
+        <p style="color:white; font-size: 1.1rem;">Professional Secure Examination Suite</p>
+        <div class="flex" style="justify-content: center; margin-top: 40px;">
+            <div class="card-box" style="width: 220px; cursor: pointer; border-top: 6px solid var(--primary);" onclick="showTeacherLogin()">
+                <div style="font-size: 3.5rem;">📊</div>
+                <h3>Teacher</h3>
+                <p style="color: black">Management Portal</p>
+            </div>
+            <div class="card-box" style="width: 220px; cursor: pointer; border-top: 6px solid var(--secondary);" onclick="showStudentLogin()">
+                <div style="font-size: 3.5rem;">🚀</div>
+                <h3>Student</h3>
+                <p style="color: black">Examination Hall</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-teacher-login" class="hidden">
+        <div class="card-box">
+            <h2 class="text-center">Teacher Authentication</h2>
+            <p class="text-center" style="color: #64748b;">Please enter your credentials</p>
+            <label>Username</label>
+            <input type="text" id="t-user" placeholder="Enter username">
+            <label>Password</label>
+            <input type="password" id="t-pass" placeholder="Enter password">
+            <button onclick="loginTeacher()" class="btn-primary w-full">Access Dashboard</button>
+            <button onclick="location.reload()" class="btn-outline w-full" style="margin-top: 10px;">Back</button>
+            <p id="t-login-err" style="color: var(--danger); font-size: 0.9rem; text-align: center; margin-top: 10px; display: none;">Invalid Username or Password</p>
+        </div>
+    </div>
+
+    <div id="view-student-login" class="hidden">
+        <div class="card-box">
+            <h2 class="text-center">Student Identification</h2>
+            <label>Full Name:</label>
+            <input type="text" id="student-name-input" placeholder="e.g. John Smith">
+            <button onclick="loginStudent()" class="btn-secondary w-full">Enter Exam Hall</button>
+            <button onclick="location.reload()" class="btn-outline w-full" style="margin-top: 10px;">Back</button>
+        </div>
+    </div>
+
+    <div id="view-teacher" class="hidden">
+        <div class="flex" style="justify-content: space-between; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 25px;">
+            <h2>👨‍🏫 Management Dashboard</h2>
+            <button onclick="logout()" class="btn-outline">Sign Out</button>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchTeacherTab('create')">1. Setup & Curriculum</div>
+            <div class="nav-tab" onclick="switchTeacherTab('grade')">2. Grading & Feedback</div>
+        </div>
+
+        <div id="teacher-create">
+            <div class="grid">
+                <div class="card-box" style="background: #eff6ff; border: 1px solid #bfdbfe;">
+                    <h3>📅 Exam Parameters</h3>
+                    <label>Quiz Title:</label>
+                    <input type="text" id="quiz-title" placeholder="e.g. History Final">
+                    <label>Start Window:</label>
+                    <input type="datetime-local" id="quiz-start">
+                    <label>End Window:</label>
+                    <input type="datetime-local" id="quiz-end">
+                    <label>⏳ Duration (Minutes):</label>
+                    <input type="number" id="quiz-duration" placeholder="30">
+                    <button onclick="saveSettings()" class="btn-primary w-full">Apply Schedule</button>
+                </div>
+
+                <div class="card-box" id="question-editor">
+                    <h3 id="editor-title">➕ Add New Question</h3>
+                    <input type="hidden" id="edit-id">
+                    <label>Question Prompt:</label>
+                    <textarea id="q-text" rows="3" placeholder="Define the problem..."></textarea>
+                    <label>Response Type:</label>
+                    <select id="q-type" onchange="toggleOptionsInput()">
+                        <option value="single">Single Choice</option>
+                        <option value="multiple">Multiple Choice</option>
+                        <option value="text">Written Answer</option>
+                        <option value="upload">Document Upload</option>
+                    </select>
+                    <div id="options-container">
+                        <label>Options (Separate with commas):</label>
+                        <input type="text" id="q-options" placeholder="Opt 1, Opt 2, Opt 3">
+                    </div>
+                    <div class="flex">
+                        <button onclick="saveQuestion()" id="btn-save-q" class="btn-primary w-full">Save Question</button>
+                        <button onclick="cancelEdit()" id="btn-cancel-edit" class="btn-danger hidden">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                <h3>📜 Content Preview (<span id="q-count">0</span>)</h3>
+                <button onclick="clearQuiz()" class="btn-danger btn-sm">Reset All Data</button>
+            </div>
+            <div id="quiz-preview"></div>
+        </div>
+
+        <div id="teacher-grade" class="hidden">
+            <h3>📝 Grading Queue</h3>
+            <div id="submissions-list"></div>
+        </div>
+    </div>
+
+    <div id="view-student" class="hidden">
+        <div id="timer-header" class="hidden">
+            <h2 style="color:white; margin:0;"><span id="timer-quiz-title">Quiz</span></h2>
+            <span class="timer-display" id="timer-display">00:00</span>
+        </div>
+
+        <div id="student-content-area">
+            <div class="flex" style="justify-content: space-between; margin: 20px 0;">
+                <h2>Welcome, <span id="display-student-name"></span></h2>
+                <button onclick="logout()" class="btn-outline">Exit Portal</button>
+            </div>
+
+            <div id="student-home">
+                <div class="card-box text-center">
+                    <h1 id="student-quiz-title-main" style="font-size: 2.5rem;">Loading...</h1>
+                    <div class="card-gray grid" style="text-align: left; margin: 30px 0; padding: 25px;">
+                        <div>
+                            <p><strong>📅 Starts:</strong> <span id="info-start">--</span></p>
+                            <p><strong>📅 Ends:</strong> <span id="info-end">--</span></p>
+                        </div>
+                        <div>
+                            <p><strong>⏳ Time Limit:</strong> <span id="info-duration">--</span> Mins</p>
+                        </div>
+                    </div>
+                    <div id="student-status-message" style="padding: 15px; margin-bottom: 20px; border-radius: 8px;"></div>
+                    <div id="action-area"></div>
+                </div>
+            </div>
+
+            <div id="student-attempt" class="hidden">
+                <form id="quiz-form" onsubmit="submitQuiz(event)">
+                    <div id="questions-area"></div>
+                    <button type="submit" class="btn-secondary w-full" style="padding: 20px; font-size: 1.3rem;">FINALIZE SUBMISSION</button>
+                </form>
+            </div>
+
+            <div id="student-result" class="hidden">
+                <div class="card-box text-center" style="max-width: 800px; margin: 0 auto;">
+                    <h3>Official Result</h3>
+                    <h1 style="font-size: 4rem; margin: 20px 0; color: var(--success);"><span id="result-score">--</span></h1>
+                    <div id="result-details" style="text-align: left;"></div>
+                    <button onclick="backToStudentHome()" class="btn-outline w-full">Back to Portal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* --- AUTH & DATABASE --- */
+    const AUTH_CREDS = { user: "KLH", pass: "CSE" }; // Change these!
+    
+    const DB_QUIZ = 'quiz_v5_data';
+    const DB_SETTINGS = 'quiz_v5_settings';
+    const DB_SUBMISSIONS = 'quiz_v5_submissions';
+
+    let questions = JSON.parse(localStorage.getItem(DB_QUIZ)) || [];
+    let settings = JSON.parse(localStorage.getItem(DB_SETTINGS)) || { title: "Untitled Quiz", start: "", end: "", duration: 30 };
+    let submissions = JSON.parse(localStorage.getItem(DB_SUBMISSIONS)) || [];
+    let currentStudent = "";
+    let quizInterval; 
+
+    /* --- NAVIGATION --- */
+    function logout() { location.reload(); }
+
+    function showTeacherLogin() {
+        document.getElementById('view-login').classList.add('hidden');
+        document.getElementById('view-teacher-login').classList.remove('hidden');
+    }
+
+    function loginTeacher() {
+        const u = document.getElementById('t-user').value;
+        const p = document.getElementById('t-pass').value;
+        const err = document.getElementById('t-login-err');
+
+        if(u === AUTH_CREDS.user && p === AUTH_CREDS.pass) {
+            document.getElementById('view-teacher-login').classList.add('hidden');
+            document.getElementById('view-teacher').classList.remove('hidden');
+            loadTeacherView();
+        } else {
+            err.style.display = "block";
+        }
+    }
+
+    /* --- TEACHER FUNCTIONS --- */
+    function loadTeacherView() {
+        document.getElementById('quiz-title').value = settings.title;
+        document.getElementById('quiz-start').value = settings.start;
+        document.getElementById('quiz-end').value = settings.end;
+        document.getElementById('quiz-duration').value = settings.duration;
+        renderQuestionsPreview();
+        renderSubmissionsList();
+    }
+
+    function switchTeacherTab(tab) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        if(tab === 'create') {
+            document.querySelectorAll('.nav-tab')[0].classList.add('active');
+            document.getElementById('teacher-create').classList.remove('hidden');
+            document.getElementById('teacher-grade').classList.add('hidden');
+        } else {
+            document.querySelectorAll('.nav-tab')[1].classList.add('active');
+            document.getElementById('teacher-create').classList.add('hidden');
+            document.getElementById('teacher-grade').classList.remove('hidden');
+            renderSubmissionsList();
+        }
+    }
+
+    function saveSettings() {
+        settings.title = document.getElementById('quiz-title').value;
+        settings.start = document.getElementById('quiz-start').value;
+        settings.end = document.getElementById('quiz-end').value;
+        settings.duration = document.getElementById('quiz-duration').value;
+        localStorage.setItem(DB_SETTINGS, JSON.stringify(settings));
+        alert("Schedule Saved.");
+    }
+
+    function toggleOptionsInput() {
+        const type = document.getElementById('q-type').value;
+        document.getElementById('options-container').style.display = (type === 'upload' || type === 'text') ? 'none' : 'block';
+    }
+
+    function saveQuestion() {
+        const id = document.getElementById('edit-id').value;
+        const text = document.getElementById('q-text').value;
+        const type = document.getElementById('q-type').value;
+        const opts = document.getElementById('q-options').value;
+        
+        if (!text) return;
+
+        const qObj = {
+            id: id ? parseInt(id) : Date.now(),
+            text, type,
+            options: (type !== 'upload' && type !== 'text') ? opts.split(',').map(s => s.trim()) : []
+        };
+
+        if (id) {
+            const idx = questions.findIndex(q => q.id == id);
+            questions[idx] = qObj;
+            cancelEdit();
+        } else {
+            questions.push(qObj);
+        }
+
+        localStorage.setItem(DB_QUIZ, JSON.stringify(questions));
+        document.getElementById('q-text').value = '';
+        document.getElementById('q-options').value = '';
+        renderQuestionsPreview();
+    }
+
+    function editQuestion(id) {
+        const q = questions.find(question => question.id === id);
+        document.getElementById('edit-id').value = q.id;
+        document.getElementById('q-text').value = q.text;
+        document.getElementById('q-type').value = q.type;
+        document.getElementById('q-options').value = q.options.join(', ');
+        toggleOptionsInput();
+        document.getElementById('editor-title').innerText = "✏️ Modify Question";
+        document.getElementById('btn-save-q').innerText = "Update Question";
+        document.getElementById('btn-cancel-edit').classList.remove('hidden');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function deleteQuestion(id) {
+        if(confirm("Remove this?")) {
+            questions = questions.filter(q => q.id !== id);
+            localStorage.setItem(DB_QUIZ, JSON.stringify(questions));
+            renderQuestionsPreview();
+        }
+    }
+
+    function cancelEdit() {
+        document.getElementById('edit-id').value = '';
+        document.getElementById('q-text').value = '';
+        document.getElementById('q-options').value = '';
+        document.getElementById('editor-title').innerText = "➕ Add New Question";
+        document.getElementById('btn-save-q').innerText = "Save Question";
+        document.getElementById('btn-cancel-edit').classList.add('hidden');
+    }
+
+    function renderQuestionsPreview() {
+        const div = document.getElementById('quiz-preview');
+        document.getElementById('q-count').innerText = questions.length;
+        div.innerHTML = questions.map((q, i) => `
+            <div class="card-box" style="border-left: 6px solid var(--primary);">
+                <div class="action-buttons">
+                    <button onclick="editQuestion(${q.id})" class="btn-sm btn-primary">Edit</button>
+                    <button onclick="deleteQuestion(${q.id})" class="btn-sm btn-danger">Delete</button>
+                </div>
+                <h3>Question ${i+1}</h3>
+                <p>${q.text}</p>
+            </div>
+        `).join('') || '<p class="text-center">No questions created.</p>';
+    }
+
+    function renderSubmissionsList() {
+        const div = document.getElementById('submissions-list');
+        if (submissions.length === 0) { div.innerHTML = "<p>No entries yet.</p>"; return; }
+        div.innerHTML = submissions.map((sub, idx) => `
+            <div class="card-box">
+                <div class="flex" style="justify-content:space-between">
+                    <strong>${sub.student}</strong>
+                    <span>${sub.graded ? '<b style="color:var(--success)">GRADED: '+sub.score+'</b>' : '<b style="color:var(--danger)">PENDING</b>'}</span>
+                </div>
+                <div style="margin: 15px 0; background: #f8fafc; padding: 15px; border-radius: 8px;">
+                    ${Object.keys(sub.answers).map(q => `<p><b>Q:</b> ${q}<br><b>A:</b> ${sub.answers[q]}</p>`).join('')}
+                </div>
+                <div class="flex">
+                    <input type="text" id="grade-${idx}" placeholder="Award Score" value="${sub.score || ''}">
+                    <button onclick="saveGrade(${idx})" class="btn-primary">Save Grade</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function saveGrade(idx) {
+        submissions[idx].score = document.getElementById(`grade-${idx}`).value;
+        submissions[idx].graded = true;
+        localStorage.setItem(DB_SUBMISSIONS, JSON.stringify(submissions));
+        renderSubmissionsList();
+    }
+
+    /* --- STUDENT FUNCTIONS --- */
+    function showStudentLogin() {
+        document.getElementById('view-login').classList.add('hidden');
+        document.getElementById('view-student-login').classList.remove('hidden');
+    }
+
+    function loginStudent() {
+        const name = document.getElementById('student-name-input').value;
+        if(!name) return;
+        currentStudent = name;
+        document.getElementById('view-student-login').classList.add('hidden');
+        document.getElementById('view-student').classList.remove('hidden');
+        document.getElementById('display-student-name').innerText = currentStudent;
+        loadStudentDashboard();
+    }
+
+    function loadStudentDashboard() {
+        document.getElementById('student-home').classList.remove('hidden');
+        document.getElementById('student-attempt').classList.add('hidden');
+        document.getElementById('student-result').classList.add('hidden');
+        document.getElementById('timer-header').classList.add('hidden');
+
+        document.getElementById('student-quiz-title-main').innerText = settings.title;
+        document.getElementById('info-start').innerText = settings.start || "Unset";
+        document.getElementById('info-end').innerText = settings.end || "Unset";
+        document.getElementById('info-duration').innerText = settings.duration;
+
+        const mySub = submissions.find(s => s.student === currentStudent);
+        const actionArea = document.getElementById('action-area');
+        const msgArea = document.getElementById('student-status-message');
+        
+        const now = new Date();
+        const start = settings.start ? new Date(settings.start) : null;
+        const end = settings.end ? new Date(settings.end) : null;
+
+        if (mySub) {
+            msgArea.innerText = "Submission Recorded.";
+            msgArea.style.background = "#d1fae5";
+            actionArea.innerHTML = mySub.graded ? `<button onclick="viewResults()" class="btn-success w-full">VIEW RESULTS</button>` : `<button disabled class="btn-outline w-full">GRADING IN PROGRESS</button>`;
+        } else {
+            if (start && now < start) {
+                msgArea.innerText = "Portal Locked until Start Time.";
+                msgArea.style.background = "#fff7ed";
+                actionArea.innerHTML = `<button disabled class="btn-outline w-full">LOCKED</button>`;
+            } else if (end && now > end) {
+                msgArea.innerText = "Examination window has closed.";
+                msgArea.style.background = "#fee2e2";
+                actionArea.innerHTML = `<button disabled class="btn-outline w-full">EXPIRED</button>`;
+            } else {
+                msgArea.innerText = "Ready to Begin.";
+                msgArea.style.background = "#e0e7ff";
+                actionArea.innerHTML = `<button onclick="startQuiz()" class="btn-primary w-full">START EXAM</button>`;
+            }
+        }
+    }
+
+    function startQuiz() {
+        document.getElementById('student-home').classList.add('hidden');
+        document.getElementById('student-attempt').classList.remove('hidden');
+        document.getElementById('timer-header').classList.remove('hidden');
+        document.getElementById('timer-quiz-title').innerText = settings.title;
+
+        const div = document.getElementById('questions-area');
+        div.innerHTML = questions.map((q, i) => {
+            let inputHtml = '';
+            if(q.type === 'single') inputHtml = q.options.map(opt => `<label style="display:block; padding:8px;"><input type="radio" name="q_${q.id}" value="${opt}" required> ${opt}</label>`).join('');
+            else if (q.type === 'multiple') inputHtml = q.options.map(opt => `<label style="display:block; padding:8px;"><input type="checkbox" name="q_${q.id}" value="${opt}"> ${opt}</label>`).join('');
+            else if (q.type === 'text') inputHtml = `<textarea name="q_${q.id}" rows="4" required></textarea>`;
+            else inputHtml = `<input type="file" name="q_${q.id}" required>`;
+            return `<div class="card-box"><h3>Question ${i+1}</h3><p>${q.text}</p>${inputHtml}</div>`;
+        }).join('');
+
+        let durationSeconds = (parseInt(settings.duration) || 30) * 60;
+        quizInterval = setInterval(() => {
+            durationSeconds--;
+            let m = Math.floor(durationSeconds / 60);
+            let s = durationSeconds % 60;
+            document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            if (durationSeconds <= 0) {
+                clearInterval(quizInterval);
+                document.getElementById('quiz-form').dispatchEvent(new Event('submit'));
+            }
+        }, 1000);
+    }
+
+    function submitQuiz(e) {
+        e.preventDefault();
+        clearInterval(quizInterval);
+        const fd = new FormData(document.getElementById('quiz-form'));
+        let ans = {};
+        questions.forEach(q => {
+            if(q.type === 'multiple') ans[q.text] = fd.getAll(`q_${q.id}`).join(', ');
+            else if(q.type === 'upload') ans[q.text] = "File Reference";
+            else ans[q.text] = fd.get(`q_${q.id}`);
+        });
+        submissions.push({ student: currentStudent, answers: ans, score: null, graded: false, date: new Date().toLocaleString() });
+        localStorage.setItem(DB_SUBMISSIONS, JSON.stringify(submissions));
+        loadStudentDashboard();
+    }
+
+    function viewResults() {
+        document.getElementById('student-home').classList.add('hidden');
+        document.getElementById('student-result').classList.remove('hidden');
+        const mySub = submissions.find(s => s.student === currentStudent);
+        document.getElementById('result-score').innerText = mySub.score;
+        document.getElementById('result-details').innerHTML = Object.keys(mySub.answers).map(q => `<div class="card-box"><b>Q: ${q}</b><br><span>A: ${mySub.answers[q]}</span></div>`).join('');
+    }
+
+    function backToStudentHome() { loadStudentDashboard(); }
+    function clearQuiz() { if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); } }
+</script>
+</body>
+</html>
+

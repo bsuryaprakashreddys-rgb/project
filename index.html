@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Quiz System for Education</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="container">
+    
+    <div id="view-login" class="text-center">
+        <h1>Interactive Quiz System for Education</h1>
+        <p style="color:white;">Professional Secure Examination Suite</p>
+
+        <div class="flex" style="justify-content:center;margin-top:40px;">
+
+            <div class="card-box login-card teacher" onclick="showTeacherLogin()">
+                <div class="icon">📊</div>
+                <h3>Teacher</h3>
+                <p>Management Portal</p>
+            </div>
+
+            <div class="card-box login-card student" onclick="showStudentLogin()">
+                <div class="icon">🚀</div>
+                <h3>Student</h3>
+                <p>Examination Hall</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- TEACHER LOGIN -->
+    <div id="view-teacher-login" class="hidden">
+        <div class="card-box">
+            <h2 class="text-center">Teacher Authentication</h2>
+
+            <label>Username</label>
+            <input type="text" id="t-user">
+
+            <label>Password</label>
+            <input type="password" id="t-pass">
+
+            <button onclick="loginTeacher()" class="btn-primary w-full">Access Dashboard</button>
+            <button onclick="location.reload()" class="btn-outline w-full">Back</button>
+
+            <p id="t-login-err" class="error hidden">Invalid Username or Password</p>
+        </div>
+    </div>
+
+    <!-- STUDENT LOGIN -->
+    <div id="view-student-login" class="hidden">
+        <div class="card-box">
+
+            <h2 class="text-center">Student Identification</h2>
+
+            <label>Full Name</label>
+            <input type="text" id="student-name-input">
+
+            <button onclick="loginStudent()" class="btn-secondary w-full">
+                Enter Exam Hall
+            </button>
+
+            <button onclick="location.reload()" class="btn-outline w-full">
+                Back
+            </button>
+
+        </div>
+    </div>
+
+    <!-- STUDENT VIEW -->
+    <div id="view-student" class="hidden">
+
+        <div id="timer-header" class="hidden">
+            <h2 id="timer-quiz-title">Quiz</h2>
+            <span class="timer-display" id="timer-display">00:00</span>
+        </div>
+
+        <div id="student-content-area">
+
+            <div class="flex space-between">
+                <h2>Welcome, <span id="display-student-name"></span></h2>
+                <button onclick="logout()" class="btn-outline">Exit Portal</button>
+            </div>
+
+            <div id="student-home"></div>
+
+            <div id="student-attempt" class="hidden">
+                <form id="quiz-form" onsubmit="submitQuiz(event)">
+                    <div id="questions-area"></div>
+
+                    <button type="submit" class="btn-secondary w-full big">
+                        FINALIZE SUBMISSION
+                    </button>
+
+                </form>
+            </div>
+
+            <div id="student-result" class="hidden">
+                <div class="card-box text-center">
+
+                    <h3>Official Result</h3>
+
+                    <h1 id="result-score">--</h1>
+
+                    <div id="result-details"></div>
+
+                    <button onclick="backToStudentHome()" class="btn-outline w-full">
+                        Back
+                    </button>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
